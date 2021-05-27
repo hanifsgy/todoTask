@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo/database_helper.dart';
 import 'package:todo/screens/taskpage.dart';
 import 'package:todo/widgets.dart';
 
@@ -8,6 +9,8 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  DatabaseHelper _dbHelper = DatabaseHelper();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,16 +28,21 @@ class _HomepageState extends State<Homepage> {
                       margin: EdgeInsets.only(top: 32.0, bottom: 32.0),
                       child: Image(image: AssetImage('assets/images/logo.png'))),
                   Expanded(
-                    child: ScrollConfiguration(
-                      behavior: NoGlobeBehaviour(),
-                      child: ListView(
-                        children: [
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                        ],
-                      ),
+                    child: FutureBuilder(
+                      initialData: [],
+                      future: _dbHelper.getTasks(),
+                      builder: (context, snapshot) {
+                        return ScrollConfiguration(
+                          behavior: NoGlobeBehaviour(),
+                          child: ListView.builder(
+                              itemBuilder: (context, index) {
+                                return TaskCardWidget(
+                                  title: snapshot.data[index].title,
+                                );
+                              },
+                              itemCount: snapshot.data.length),
+                        );
+                      },
                     ),
                   )
                 ],
@@ -44,7 +52,10 @@ class _HomepageState extends State<Homepage> {
                 right: 0.0,
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Taskpage()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Taskpage()),
+                    ).then((value) => setState(() {}));
                   },
                   child: Container(
                     width: 60.0,
